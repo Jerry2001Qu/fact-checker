@@ -17,12 +17,12 @@ from langsmith.wrappers import wrap_openai
 
 load_dotenv()
 
-MODEL = "anthropic/claude-sonnet-5.5"
+MODEL = os.environ["MODEL"]
 CSV_PATH = Path(__file__).parent / "data" / "reinvent_candidates.csv"
 
 # OpenRouter exposes an OpenAI-compatible API; wrap_openai logs the LLM call to LangSmith.
 client = wrap_openai(
-    OpenAI(base_url="https://openrouter.ai/api/v1", api_key=os.environ["OPENROUTER_API_KEY"])
+    OpenAI(base_url=os.environ["OPENROUTER_BASE_URL"], api_key=os.environ["OPENROUTER_API_KEY"])
 )
 
 
