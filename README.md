@@ -14,6 +14,6 @@ python check_claim.py C-02
 
 **Claim:** AWS will launch a managed quantum computing Region in us-east-1 at re:Invent 2025.
 
-- **Model id:** `anthropic/claude-opus-5.5` (OpenRouter)
+- **Model id:** `anthropic/claude-sonnet-5.5` (OpenRouter)
 - **Answer:** _TBD — run `python check_claim.py C-02`_
 - **Public LangSmith trace:** _TBD_
