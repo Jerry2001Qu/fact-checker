@@ -1,0 +1,3 @@
+anthropic
+langsmith
+python-dotenv
