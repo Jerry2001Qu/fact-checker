@@ -4,21 +4,26 @@ Usage: python check_claim.py [CLAIM_ID]   (default: C-02)
 """
 
 import csv
+import os
 import sys
 from pathlib import Path
 
-import anthropic
 from dotenv import load_dotenv
+from openai import OpenAI
 from langsmith import Client as LangSmithClient
 from langsmith import traceable
 from langsmith.run_helpers import get_current_run_tree
+from langsmith.wrappers import wrap_openai
 
 load_dotenv()
 
-MODEL = "claude-opus-5-5"
+MODEL = "anthropic/claude-opus-5.5"
 CSV_PATH = Path(__file__).parent / "data" / "reinvent_candidates.csv"
 
-client = anthropic.Anthropic()
+# OpenRouter exposes an OpenAI-compatible API; wrap_openai logs the LLM call to LangSmith.
+client = wrap_openai(
+    OpenAI(base_url="https://openrouter.ai/api/v1", api_key=os.environ["OPENROUTER_API_KEY"])
+)
 
 
 def load_claim(claim_id: str) -> dict:
@@ -40,18 +45,11 @@ def check_claim(claim: dict) -> dict:
         "Is this claim true, false, or unverified? Start your answer with one word "
         "(TRUE, FALSE, or UNVERIFIED), then give a short justification."
     )
-    response = client.beta.messages.create(
+    response = client.chat.completions.create(
         model=MODEL,
-        max_tokens=16000,
-        output_config={"effort": "medium"},
-        betas=["server-side-fallback-2026-07-01"],
-        fallbacks="default",
         messages=[{"role": "user", "content": prompt}],
     )
-    if response.stop_reason == "refusal":
-        answer = "REFUSED"
-    else:
-        answer = "".join(b.text for b in response.content if b.type == "text").strip()
+    answer = (response.choices[0].message.content or "").strip()
 
     run = get_current_run_tree()
     return {"model": response.model, "answer": answer, "run_id": str(run.id) if run else None}
